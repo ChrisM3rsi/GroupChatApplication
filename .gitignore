@@ -1,0 +1,44 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+packages/
+
+# Rider
+.idea/
+*.sln.iml
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Other files
+*.db
+*.db-journal
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# User-specific files
+*.swp
+*.swo
+
+# Visual Studio Code settings
+.settings/
