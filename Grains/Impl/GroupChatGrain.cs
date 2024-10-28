@@ -38,12 +38,9 @@ public class GroupChatGrain : Grain, IGroupChatGrain
        return Task.CompletedTask;
     }
 
-    public Task ReceiveMessage(Message message)
+    public async Task ReceiveMessage(Message message)
     {
        _groupChat.Messages.Add(message.Text);
-       Console.WriteLine(message);
-       _observers.Notify(x => x.OnMessageReceived(message));
-       Console.WriteLine($"Messages Count: {_groupChat.Messages.Count}"); 
-       return Task.CompletedTask;
+       await _observers.Notify(x => x.OnMessageReceived(message));
     }
 }
