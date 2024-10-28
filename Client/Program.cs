@@ -20,8 +20,12 @@ var client = host.Services.GetRequiredService<IClusterClient>();
 
 var chatService = new ChatService(
     client,
-    m => consoleService.AppendToOutput($"{m.Timestamp:s} {m.ChannelName} {m.Sender}: {m.Text}"));
+    m => consoleService.AppendToOutput(m));
 
-await consoleService.HandleInput(m => chatService.HandleInput(m));
+consoleService.SubscribeToChatService(chatService);
+
+
+await consoleService.HandleInput(async m  => await chatService.HandleInput(m));
+
 
 await host.StopAsync();

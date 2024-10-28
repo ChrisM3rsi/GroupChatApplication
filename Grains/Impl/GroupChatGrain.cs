@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Grains.Models;
 using Microsoft.Extensions.Logging;
 using Orleans.Utilities;
@@ -40,5 +41,14 @@ public class GroupChatGrain : Grain<GroupChatState>, IGroupChatGrain
     {
        State.Messages.Add(message);
        await _observers.Notify(x => x.OnMessageReceived(message));
+    }
+
+    public Task<ImmutableList<Message>> GetChatHistory(int lastMessageCount)
+    {
+       var messages = State.Messages
+          .TakeLast(lastMessageCount)
+          .ToImmutableList();
+       
+       return Task.FromResult(messages);
     }
 }

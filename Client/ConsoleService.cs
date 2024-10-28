@@ -1,12 +1,19 @@
-﻿namespace Client;
+﻿using Grains.Models;
+
+namespace Client;
 
 public class ConsoleService
 {
     private readonly ConsoleState _consoleState = new();
     private readonly CancellationTokenSource _cts = new();
 
+    public void SubscribeToChatService(ChatService chatService)
+    {
+        chatService.OnGroupJoin += AppendToOutput;
+    }
+    
     public async Task HandleInput(
-        Action<string> inputHandler)
+        Func<string, Task> inputHandler)
     {
         while (!_cts.Token.IsCancellationRequested)
         {
@@ -20,7 +27,7 @@ public class ConsoleService
                     break;
                 }
 
-                inputHandler(_consoleState.Input);
+                await inputHandler(_consoleState.Input);
                 _consoleState.Input = string.Empty;
             }
             else
@@ -60,8 +67,8 @@ public class ConsoleService
         }
     }
 
-    public void AppendToOutput(string newLine)
+    public void AppendToOutput(Message message)
     {
-        _consoleState.Output.Add(newLine);
+        _consoleState.Output.Add(message);
     }
 }

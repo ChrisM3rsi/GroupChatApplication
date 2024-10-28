@@ -14,4 +14,9 @@ public class Message
 
     [Id(3)] 
     public string ChannelName { get; set; } = string.Empty;
+
+    public override string ToString()
+    {
+        return $"{Timestamp:s} {ChannelName} {Sender}: {Text}";
+    }
 }
