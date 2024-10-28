@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Orleans.Configuration;
 
 var builder = Host.CreateDefaultBuilder(args)
     .UseOrleans(silo =>
     {
-        silo.UseLocalhostClustering()
+        silo.Configure<GrainCollectionOptions>(x => { x.CollectionAge = TimeSpan.FromSeconds(61); })
+            .UseLocalhostClustering()
             .AddMemoryGrainStorageAsDefault()
             .ConfigureLogging(logging => logging
                 .SetMinimumLevel(LogLevel.Error)

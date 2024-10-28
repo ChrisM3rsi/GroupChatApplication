@@ -1,16 +1,9 @@
-﻿using Grains.Models;
-
-namespace Client;
+﻿namespace Client;
 
 public class ConsoleService
 {
     private readonly ConsoleState _consoleState = new();
     private readonly CancellationTokenSource _cts = new();
-
-    public void SubscribeToChatService(ChatService chatService)
-    {
-        chatService.OnGroupJoin += AppendToOutput;
-    }
     
     public async Task HandleInput(
         Func<string, Task> inputHandler)
@@ -67,7 +60,7 @@ public class ConsoleService
         }
     }
 
-    public void AppendToOutput(Message message)
+    public void AppendToOutput(string message)
     {
         _consoleState.Output.Add(message);
     }

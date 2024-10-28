@@ -1,6 +1,4 @@
-﻿using Grains.Models;
-
-namespace Client;
+﻿namespace Client;
 
 public class ConsoleState
 {
@@ -8,13 +6,13 @@ public class ConsoleState
 
     public string Input { get; set; } = string.Empty;
 
-    public IList<Message> Output { get; } = new List<Message>
+    public IList<string> Output { get; } = new List<string>
     {
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty
     };
 }

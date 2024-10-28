@@ -7,15 +7,15 @@ namespace Client;
 public class ChatService
 {
     private readonly IClusterClient _client;
+    private readonly Action<Message> _messageHandler;
     private readonly IMessageObserver _observer;
     private IPersonGrain? _personGrain;
     private IGroupChatGrain? _groupChatGrain;
 
-    public event Action<Message>? OnGroupJoin;
-
     public ChatService(IClusterClient client, Action<Message> messageHandler)
     {
         _client = client;
+        _messageHandler = messageHandler;
         _observer = client.CreateObjectReference<IMessageObserver>(new MessageObserver(messageHandler));
     }
 
@@ -28,7 +28,7 @@ public class ChatService
             var chatHistory = await GetChatHistory();
             foreach (var message in chatHistory)
             {
-                OnGroupJoin?.Invoke(message);
+                _messageHandler(message);
             }
         }        
         else if (input.StartsWith("/name ") && input.Length > 6)
@@ -41,7 +41,7 @@ public class ChatService
         }
     }
 
-    public async Task<ImmutableList<Message>> GetChatHistory(int messageCount = 5)
+    private async Task<ImmutableList<Message>> GetChatHistory(int messageCount = 5)
     {
         return await _groupChatGrain?.GetChatHistory(messageCount);
     }
