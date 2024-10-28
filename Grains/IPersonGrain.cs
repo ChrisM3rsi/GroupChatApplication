@@ -6,7 +6,5 @@ public interface IPersonGrain : IGrainWithStringKey
 
     Task LeaveGroup();
 
-    Task SendMessage(string message);
-    
-    
+    Task SendMessage(string messageText);
 }

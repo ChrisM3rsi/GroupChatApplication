@@ -1,7 +1,8 @@
+using Grains.Models;
+
 namespace Grains;
 
 public interface IMessageObserver : IGrainObserver
 {
-    Task OnMessageReceived(string message);
-    
+    Task OnMessageReceived(Message message);
 }

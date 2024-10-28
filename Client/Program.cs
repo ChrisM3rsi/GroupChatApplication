@@ -1,31 +1,27 @@
-﻿using Grains;
-using Grains.Impl;
+﻿using Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = Host.CreateDefaultBuilder(args)
-    .UseOrleansClient(client =>
-    {
-        client.UseLocalhostClustering();
-    })
-    .ConfigureLogging(logging => logging.AddConsole())
+    .UseOrleansClient(client => { client.UseLocalhostClustering(); })
+    .ConfigureLogging(logging => logging
+        .SetMinimumLevel(LogLevel.Error)
+        .AddConsole())
     .UseConsoleLifetime();
 
 using var host = builder.Build();
 await host.StartAsync();
 
+var consoleService = new ConsoleService();
+_ = consoleService.StartConsole(TimeSpan.FromMilliseconds(1000));
+
 var client = host.Services.GetRequiredService<IClusterClient>();
 
-var me = client.GetGrain<IPersonGrain>("Chris");
+var chatService = new ChatService(
+    client,
+    m => consoleService.AppendToOutput($"{m.Timestamp:s} {m.ChannelName} {m.Sender}: {m.Text}"));
 
-var observer = client.CreateObjectReference<IMessageObserver>(new MessageObserver());
+await consoleService.HandleInput(m => chatService.HandleInput(m));
 
-await me.JoinGroup("petsGroup", observer);
-await me.SendMessage("My rabbit is awesome");
-
-
-
-
-await Task.Delay(10000);
 await host.StopAsync();

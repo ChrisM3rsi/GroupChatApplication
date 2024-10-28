@@ -8,5 +8,5 @@ public interface IGroupChatGrain : IGrainWithStringKey
     
     Task RemovePerson(PersonState person);
     
-    Task ReceiveMessage(string message);
+    Task ReceiveMessage(Message message);
 }
