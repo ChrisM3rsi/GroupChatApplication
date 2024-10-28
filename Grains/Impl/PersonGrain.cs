@@ -9,6 +9,7 @@ public class PersonGrain : Grain<PersonState>, IPersonGrain //TODO: check if Per
         var groupChatGrain = GrainFactory.GetGrain<IGroupChatGrain>(groupChatName);
         await groupChatGrain.AddPerson(State, observer); // TODO: possible refactor to _person.Name
         State.GroupName = groupChatName;
+        await WriteStateAsync();
     }
 
     public async Task LeaveGroup()
@@ -21,6 +22,7 @@ public class PersonGrain : Grain<PersonState>, IPersonGrain //TODO: check if Per
         var groupChatGrain = GrainFactory.GetGrain<IGroupChatGrain>(State.GroupName);
         await groupChatGrain.RemovePerson(State); // TODO: possible refactor to _person.Name
         State.GroupName = default;
+        await WriteStateAsync();
     }
 
     public async Task SendMessage(string messageText)
@@ -39,11 +41,20 @@ public class PersonGrain : Grain<PersonState>, IPersonGrain //TODO: check if Per
             Sender = State.Name,
             ChannelName = State.GroupName
         });
+        await WriteStateAsync();
     }
 
     public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        State.Name = IdentityString ;
+        State.Name = IdentityString;
+        Console.WriteLine($"{IdentityString} is activated");
         return base.OnActivateAsync(cancellationToken);
+    }
+
+    public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
+    {
+        Console.WriteLine($"{IdentityString} is deactivated reason: {reason}");
+        
+        return base.OnDeactivateAsync(reason, cancellationToken);
     }
 }
