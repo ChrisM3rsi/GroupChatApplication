@@ -5,6 +5,7 @@ var builder = Host.CreateDefaultBuilder(args)
     .UseOrleans(silo =>
     {
         silo.UseLocalhostClustering()
+            .AddMemoryGrainStorageAsDefault()
             .ConfigureLogging(logging => logging
                 .SetMinimumLevel(LogLevel.Error)
                 .AddConsole());

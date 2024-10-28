@@ -1,13 +1,12 @@
+using System.Collections.Immutable;
 using Grains.Models;
 using Microsoft.Extensions.Logging;
 using Orleans.Utilities;
 
 namespace Grains.Impl;
 
-public class GroupChatGrain : Grain, IGroupChatGrain
+public class GroupChatGrain : Grain<GroupChatState>, IGroupChatGrain
 {
-    private readonly GroupChatState _groupChat = new ();
-    
     private readonly ObserverManager<IMessageObserver> _observers;
     private readonly Dictionary<string, IMessageObserver> _personSubscribersDict;
 
@@ -19,7 +18,7 @@ public class GroupChatGrain : Grain, IGroupChatGrain
     
     public Task AddPerson(PersonState person , IMessageObserver observer)
     {
-       _groupChat.Persons.Add(person);
+       State.Persons.Add(person);
        _observers.Subscribe(observer, observer);
        _personSubscribersDict[person.Name] = observer;
        return Task.CompletedTask;
@@ -27,7 +26,7 @@ public class GroupChatGrain : Grain, IGroupChatGrain
 
     public Task RemovePerson(PersonState person)
     {
-       _groupChat.Persons.Remove(person);
+       State.Persons.Remove(person);
        _personSubscribersDict.TryGetValue(person.Name, out var personObserver);
 
        if (personObserver != null)
@@ -38,12 +37,18 @@ public class GroupChatGrain : Grain, IGroupChatGrain
        return Task.CompletedTask;
     }
 
-    public Task ReceiveMessage(Message message)
+    public async Task ReceiveMessage(Message message)
     {
-       _groupChat.Messages.Add(message.Text);
-       Console.WriteLine(message);
-       _observers.Notify(x => x.OnMessageReceived(message));
-       Console.WriteLine($"Messages Count: {_groupChat.Messages.Count}"); 
-       return Task.CompletedTask;
+       State.Messages.Add(message);
+       await _observers.Notify(x => x.OnMessageReceived(message));
+    }
+
+    public Task<ImmutableList<Message>> GetChatHistory(int lastMessageCount)
+    {
+       var messages = State.Messages
+          .TakeLast(lastMessageCount)
+          .ToImmutableList();
+       
+       return Task.FromResult(messages);
     }
 }

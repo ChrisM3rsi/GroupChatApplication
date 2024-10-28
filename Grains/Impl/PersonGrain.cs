@@ -2,52 +2,48 @@ using Grains.Models;
 
 namespace Grains.Impl;
 
-public class PersonGrain : Grain, IPersonGrain //TODO: check if Person should inherit from IMessageObserver
+public class PersonGrain : Grain<PersonState>, IPersonGrain //TODO: check if Person should inherit from IMessageObserver
 {
-    private readonly PersonState _person = new ();
-
     public async Task JoinGroup(string groupChatName, IMessageObserver observer)
     {
         var groupChatGrain = GrainFactory.GetGrain<IGroupChatGrain>(groupChatName);
-        await groupChatGrain.AddPerson(_person, observer); // TODO: possible refactor to _person.Name
-        _person.GroupName = groupChatName;
+        await groupChatGrain.AddPerson(State, observer); // TODO: possible refactor to _person.Name
+        State.GroupName = groupChatName;
     }
 
-    public Task LeaveGroup()
+    public async Task LeaveGroup()
     {
-        if (_person.GroupName == null)
+        if (State.GroupName == null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        var groupChatGrain = GrainFactory.GetGrain<IGroupChatGrain>(_person.GroupName);
-        groupChatGrain.RemovePerson(_person); // TODO: possible refactor to _person.Name
-        _person.GroupName = default;
-        return Task.CompletedTask;
+        var groupChatGrain = GrainFactory.GetGrain<IGroupChatGrain>(State.GroupName);
+        await groupChatGrain.RemovePerson(State); // TODO: possible refactor to _person.Name
+        State.GroupName = default;
     }
 
-    public Task SendMessage(string messageText)
+    public async Task SendMessage(string messageText)
     {
-        if (_person.GroupName == null)
+        if (State.GroupName == null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        _person.MessagesSent++;
-        var groupChatGrain = GrainFactory.GetGrain<IGroupChatGrain>(_person.GroupName);
-        groupChatGrain.ReceiveMessage(new Message
+        var groupChatGrain = GrainFactory.GetGrain<IGroupChatGrain>(State.GroupName);
+        State.MessagesSent++;
+        await groupChatGrain.ReceiveMessage(new Message
         {
             Timestamp = DateTime.UtcNow,
             Text = messageText,
-            Sender = _person.Name,
-            ChannelName = _person.GroupName
+            Sender = State.Name,
+            ChannelName = State.GroupName
         });
-        return Task.CompletedTask;
     }
 
     public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        _person.Name = IdentityString ;
+        State.Name = IdentityString ;
         return base.OnActivateAsync(cancellationToken);
     }
 }
