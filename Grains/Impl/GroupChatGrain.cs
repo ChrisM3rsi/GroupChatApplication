@@ -16,8 +16,7 @@ public class GroupChatGrain : Grain, IGroupChatGrain
        _observers = new ObserverManager<IMessageObserver>(TimeSpan.FromMinutes(5), logger);
        _personSubscribersDict = new Dictionary<string, IMessageObserver>();
     }
-
-
+    
     public Task AddPerson(PersonState person , IMessageObserver observer)
     {
        _groupChat.Persons.Add(person);
@@ -39,9 +38,9 @@ public class GroupChatGrain : Grain, IGroupChatGrain
        return Task.CompletedTask;
     }
 
-    public Task ReceiveMessage(string message)
+    public Task ReceiveMessage(Message message)
     {
-       _groupChat.Messages.Add(message);
+       _groupChat.Messages.Add(message.Text);
        Console.WriteLine(message);
        _observers.Notify(x => x.OnMessageReceived(message));
        Console.WriteLine($"Messages Count: {_groupChat.Messages.Count}"); 

@@ -5,7 +5,6 @@ namespace Grains.Impl;
 public class PersonGrain : Grain, IPersonGrain //TODO: check if Person should inherit from IMessageObserver
 {
     private readonly PersonState _person = new ();
-    
 
     public async Task JoinGroup(string groupChatName, IMessageObserver observer)
     {
@@ -27,7 +26,7 @@ public class PersonGrain : Grain, IPersonGrain //TODO: check if Person should in
         return Task.CompletedTask;
     }
 
-    public Task SendMessage(string message)
+    public Task SendMessage(string messageText)
     {
         if (_person.GroupName == null)
         {
@@ -36,7 +35,13 @@ public class PersonGrain : Grain, IPersonGrain //TODO: check if Person should in
 
         _person.MessagesSent++;
         var groupChatGrain = GrainFactory.GetGrain<IGroupChatGrain>(_person.GroupName);
-        groupChatGrain.ReceiveMessage(message);
+        groupChatGrain.ReceiveMessage(new Message
+        {
+            Timestamp = DateTime.UtcNow,
+            Text = messageText,
+            Sender = _person.Name,
+            ChannelName = _person.GroupName
+        });
         return Task.CompletedTask;
     }
 
