@@ -4,10 +4,8 @@ using Orleans.Utilities;
 
 namespace Grains.Impl;
 
-public class GroupChatGrain : Grain, IGroupChatGrain
+public class GroupChatGrain : Grain<GroupChatState>, IGroupChatGrain
 {
-    private readonly GroupChatState _groupChat = new ();
-    
     private readonly ObserverManager<IMessageObserver> _observers;
     private readonly Dictionary<string, IMessageObserver> _personSubscribersDict;
 
@@ -19,7 +17,7 @@ public class GroupChatGrain : Grain, IGroupChatGrain
     
     public Task AddPerson(PersonState person , IMessageObserver observer)
     {
-       _groupChat.Persons.Add(person);
+       State.Persons.Add(person);
        _observers.Subscribe(observer, observer);
        _personSubscribersDict[person.Name] = observer;
        return Task.CompletedTask;
@@ -27,7 +25,7 @@ public class GroupChatGrain : Grain, IGroupChatGrain
 
     public Task RemovePerson(PersonState person)
     {
-       _groupChat.Persons.Remove(person);
+       State.Persons.Remove(person);
        _personSubscribersDict.TryGetValue(person.Name, out var personObserver);
 
        if (personObserver != null)
@@ -40,7 +38,7 @@ public class GroupChatGrain : Grain, IGroupChatGrain
 
     public async Task ReceiveMessage(Message message)
     {
-       _groupChat.Messages.Add(message.Text);
+       State.Messages.Add(message);
        await _observers.Notify(x => x.OnMessageReceived(message));
     }
 }
